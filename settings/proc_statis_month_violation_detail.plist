@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>violation_count</string>
+			<key>1</key>
+			<string>violation_amount</string>
+			<key>2</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

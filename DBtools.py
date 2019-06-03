@@ -8,7 +8,7 @@ class DB:
 				'user':'root',
 				'password':'root',
 				'port':3306,
-				'database':'pricecontrol',
+				'database':'bmi_old_and_new',
 				'charset':'utf8',
 				}
 		self.cx=mysql.connector.connect( **config )

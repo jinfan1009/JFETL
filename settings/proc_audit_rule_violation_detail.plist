@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>rule_code</string>
+			<key>1</key>
+			<string>rule_name</string>
+			<key>2</key>
+			<string>dept_id</string>
+			<key>3</key>
+			<string>item_id</string>
+			<key>4</key>
+			<string>item_name</string>
+			<key>5</key>
+			<string>violation_count</string>
+			<key>6</key>
+			<string>violation_amount</string>
+			<key>7</key>
+			<string>detail_count</string>
+			<key>8</key>
+			<string>detail_amount</string>
+			<key>9</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+		select  m.*,n.ct,n.costs ,'{pmonth}' as pmonth
+from
+(
+		select   c.RULE_CODE,c.RULE_NAME,a.DEPT_ID,a.ITEM_ID, d.item_name,COUNT(*) as ct , sum(a.COSTS) as COSTS
+from td_order_detail a
+LEFT JOIN tr_auditresult b on a.DETAIL_ID = b.DETAIL_ID
+LEFT JOIN tb_rule c on b.RULE_CODE = c.RULE_CODE
+LEFT JOIN tb_clinicitem d on d.ITEM_ID = a.ITEM_ID
+where left(a.ITEM_DATE,7) = '{pmonth}'
+and c.RULE_CODE is not null
+GROUP BY c.RULE_CODE,a.DEPT_ID,a.ITEM_ID
+
+) as  m
+LEFT JOIN (
+
+select   a.DEPT_ID,a.ITEM_ID, COUNT(*) as ct , sum(a.COSTS) as COSTS
+from td_order_detail a
+
+
+where left(a.ITEM_DATE,7) = '{pmonth}'
+
+GROUP BY  a.DEPT_ID,a.ITEM_ID
+
+) as n  on m.item_id =  n.item_id and m.dept_id = n.dept_id
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from audit_rule_violation_detail where data_month = '{pmonth}'
+
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>rule_code</key>
+			<string>rule_code</string>
+			<key>rule_name</key>
+			<string>rule_name</string>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>item_id</key>
+			<string>item_id</string>
+			<key>item_name</key>
+			<string>item_name</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>violation_amount</key>
+			<string>violation_amount</string>
+			<key>detail_count</key>
+			<string>detail_count</string>
+			<key>detail_amount</key>
+			<string>detail_amount</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+
+INSERT into audit_rule_violation_detail ( dept_id,    rule_code,rule_name    ,rule_violation_count ,rule_order_detail_count,data_month,item_id     ,item_name    ,rule_violation_amount,rule_order_detail_amount )
+							VALUES('{dept_id}'   ,'{rule_code}','{rule_name}',{violation_count}    , {detail_count}        ,'{pmonth}', '{item_id}','{item_name}',  {violation_amount} ,{detail_amount}        )
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

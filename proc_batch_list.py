@@ -31,9 +31,10 @@ def  run():
 
         #single_proc("proc_audit_all_analysis", month)
         #single_proc("proc_audit_service_record", month)
-        single_proc("proc_statis_project_development_item", month)
+        #single_proc("proc_statis_project_development_item", month)
 
         #single_proc("proc_statis_service_project_violation", month)
+        #single_proc("proc_statis_project_development_detail", month)
         #single_proc("", month)
         #single_proc("", month)
 

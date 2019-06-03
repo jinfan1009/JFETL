@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+
+			<key>0</key>
+			<string>dept_id</string>
+			<key>1</key>
+			<string>medical_count</string>
+			<key>2</key>
+			<string>develop_count</string>
+			<key>3</key>
+			<string>total_count</string>
+			<key>4</key>
+			<string>comprehensive_service_count</string>
+			<key>5</key>
+			<string>medical_dt_count</string>
+			<key>6</key>
+			<string>clinical_dt_count</string>
+			<key>7</key>
+			<string>tcm_dt_count</string>
+			<key>8</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+
+
+select a.DEPT_ID,c.medical_count, if(b.develop_count is null, 0, b.develop_count),  if(b.total_count is null, 0, b.total_count),
+if( d.comprehensive_service_count is null,0,d.comprehensive_service_count),  if(e.medical_dt_count is null, 0, e.medical_dt_count ),
+if(f.clinical_dt_count is null, 0,f.clinical_dt_count is null ), if(g.tcm_dt_count is null,0,g.tcm_dt_count ) , '{pmonth}' as pmonth
+from tb_dept a
+LEFT JOIN (
+select  a.dept_id , count(DISTINCT(a.ITEM_ID)) as  develop_count , count(*) as total_count
+from td_order_detail a
+where left(a.ITEM_DATE,7) = '{pmonth}'
+GROUP BY DEPT_ID
+
+) as b on a.DEPT_ID = b.DEPT_ID
+
+LEFT JOIN (
+SELECT COUNT(*) as medical_count  from tb_clinicitem
+)  as c on 1=1
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as comprehensive_service_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '1'
+
+
+)  as d  on a.dept_id = d.dept_id
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as medical_dt_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '2'
+
+)  as e  on a.dept_id = e.dept_id
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as clinical_dt_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '3'
+
+)  as f  on a.dept_id = f.dept_id
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as tcm_dt_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '4'
+
+)  as g  on a.dept_id = g.dept_id
+
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from statis_project_development_violation where create_date = '{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>medical_count</key>
+			<string>medical_count</string>
+			<key>develop_count</key>
+			<string>develop_count</string>
+			<key>total_count</key>
+			<string>total_count</string>
+			<key>comprehensive_service_count</key>
+			<string>comprehensive_service_count</string>
+			<key>medical_dt_count</key>
+			<string>medical_dt_count</string>
+			<key>clinical_dt_count</key>
+			<string>clinical_dt_count</string>
+			<key>tcm_dt_count</key>
+			<string>tcm_dt_count</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+		insert into statis_project_development_violation( dept_id , medical_count  , development_count, total_count    ,comprehensive_service_count  ,  medical_dt_count ,clinical_dt_count  ,tcm_dt_count  ,create_date )
+										VALUES('{dept_id}', {medical_count},  {develop_count} ,  {total_count} ,{comprehensive_service_count}, {medical_dt_count},{clinical_dt_count},{tcm_dt_count}, '{pmonth}')
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>dept_id</string>
+			<key>1</key>
+			<string>dept_name</string>
+			<key>2</key>
+			<string>order_count</string>
+			<key>3</key>
+			<string>detail_count</string>
+			<key>4</key>
+			<string>detail_amount</string>
+			<key>5</key>
+			<string>violation_count</string>
+			<key>6</key>
+			<string>violation_amount</string>
+			<key>7</key>
+			<string>item_date</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+
+
+
+select m.dept_id,t.dept_name,m.order_count , m.ct,m.costs,if(n.ct is null , 0, n.ct), if(n.costs is null, 0, n.costs),  m.item_date
+from
+(
+SELECT DEPT_ID,item_date, COUNT(*) as ct, SUM(COSTS) as COSTS , COUNT(DISTINCT(VISIT_ID)) as order_count
+from  td_order_detail b
+where left(b.ITEM_DATE, 7)  = '{pmonth}'
+GROUP BY b.DEPT_ID ,b.item_date
+
+) as m
+LEFT JOIN (
+SELECT DEPT_ID,item_date, COUNT(*) as ct, SUM(COSTS) as COSTS
+from  td_order_detail b
+LEFT JOIN tr_auditresult c on  b.DETAIL_ID = c.DETAIL_ID
+where left(b.ITEM_DATE, 7)  = '{pmonth}'
+and c.detail_id is not null
+GROUP BY b.DEPT_ID,b.item_date
+
+
+
+) as n on m.dept_id = n.dept_id and m.item_date = n.item_date
+LEFT JOIN tb_dept t on m.dept_id = t.dept_id
+
+
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from audit_all_analysis where left(date_time,7) = '{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>dept_name</key>
+			<string>dept_name</string>
+			<key>order_count</key>
+			<string>order_count</string>
+			<key>detail_count</key>
+			<string>detail_count</string>
+			<key>detail_amount</key>
+			<string>detail_amount</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>violation_amount</key>
+			<string>violation_amount</string>
+			<key>item_date</key>
+			<string>item_date</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+         INSERT INTO audit_all_analysis(settlement_num,settlement_detail_num,illegil_detail_num,charge_amount  ,illegil_amount     ,dept_id    ,dept_name    ,date_time ,create_time)
+						VALUES({order_count} ,{detail_count}       ,{violation_count} ,{detail_amount}, {violation_amount},'{dept_id}','{dept_name}','{item_date}',now())
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+
+	</dict>
+</dict>
+</plist>

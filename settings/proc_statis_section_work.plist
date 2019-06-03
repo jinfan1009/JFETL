@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>dept_id</string>
+			<key>1</key>
+			<string>indays</string>
+			<key>2</key>
+			<string>livedays</string>
+			<key>3</key>
+			<string>outdays</string>
+			<key>4</key>
+			<string>pmonth</string>
+
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+
+		 select a.dept_id,  if(b.indays is null,0,b.indays), if(b.livedays is null,0,b.livedays) , if(c.outdays is null,0, c.outdays)  ,'2018-12' as pmonth
+from tb_dept a
+LEFT JOIN (
+
+select   dept_id,COUNT(*) as indays ,AVG( TO_DAYS( a.bill_date)- TO_DAYS(a.VISIT_DATE) ) as livedays
+from td_order a
+LEFT JOIN tb_visittype b on a.VISIT_TYPE = b.VISITTYPE_ID
+where
+left(a.DISCHARGE_DATE,7 ) ='{pmonth}' and  b.VISITTYPE_ID = 0
+
+GROUP BY a.DEPT_ID
+
+
+) as  b  on a.DEPT_ID = b.dept_id
+left JOIN(
+
+
+select   dept_id,COUNT(*) as outdays
+from td_order a
+LEFT JOIN tb_visittype b on a.VISIT_TYPE = b.VISITTYPE_ID
+where
+left(a.DISCHARGE_DATE,7 ) ='{pmonth}' and  b.VISITTYPE_ID = 1
+
+GROUP BY a.DEPT_ID
+
+
+) as c  on a.DEPT_ID = c.dept_id
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from statis_section_work  where create_date ='{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>indays</key>
+			<string>indays</string>
+			<key>livedays</key>
+			<string>livedays</string>
+			<key>outdays</key>
+			<string>outdays</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+
+			insert into statis_section_work (dept_id  ,emergency_number  ,discharge_number  ,average_days  ,surgical_cases,  bed_utilization,create_date)
+							values('{dept_id}',{outdays}         , {indays}         ,{livedays},0             ,0.25             ,'{pmonth}')
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>item_id</string>
+			<key>1</key>
+			<string>item_name</string>
+			<key>2</key>
+			<string>dept_id</string>
+			<key>3</key>
+			<string>dept_name</string>
+			<key>4</key>
+			<string>violation_count</string>
+			<key>5</key>
+			<string>violation_amount</string>
+			<key>6</key>
+			<string>detail_count</string>
+			<key>7</key>
+			<string>detail_amount</string>
+			<key>8</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+select m.*,n.ct,n.costs ,'{pmonth}' as pmonth
+from
+(
+select a.ITEM_ID, b.ITEM_NAME,d.DEPT_ID,d.DEPT_NAME,  count(*) as ct ,sum(costs) as COSTS
+from td_order_detail a
+LEFT JOIN  tb_clinicitem b on a.ITEM_ID = b.ITEM_ID
+LEFT JOIN  tr_auditresult c on a.DETAIL_ID = c.DETAIL_ID
+LEFT JOIN  tb_dept d on a.DEPT_ID = d.DEPT_ID
+where left(a.item_date,7) = '{pmonth}'
+and c.DETAIL_ID is not null
+GROUP BY a.ITEM_ID
+) as m
+LEFT JOIN   (
+
+select a.ITEM_ID, count(*) as ct ,sum(costs) as COSTS
+from td_order_detail a
+
+
+where left(a.item_date,7) = '{pmonth}'
+
+GROUP BY a.ITEM_ID
+
+					) as n on m.item_id = n.item_id
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from audit_item_analysis where data_month = '{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>item_id</key>
+			<string>item_id</string>
+			<key>item_name</key>
+			<string>item_name</string>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>dept_name</key>
+			<string>dept_name</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>violation_amount</key>
+			<string>violation_amount</string>
+			<key>detail_count</key>
+			<string>detail_count</string>
+			<key>detail_amount</key>
+			<string>detail_amount</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+
+insert into audit_item_analysis( dept_id,dept_name    ,item_id      ,item_name    ,item_detail_count,item_violation_count,data_month,create_time,order_detail_amount,illegil_amount)
+					values('{dept_id}'  ,'{dept_name}','{item_id}'  ,'{item_name}', {detail_count}  ,{violation_count}   ,'{pmonth}', now()     ,  {detail_amount}  ,{violation_amount} )
+
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>rule_code</string>
+			<key>1</key>
+			<string>violation_count</string>
+			<key>2</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+		select   a.RULE_CODE, COUNT(*), '{pmonth}' as pmonth from  tr_auditresult as a
+LEFT JOIN td_order_detail as b on  a.DETAIL_ID = b.DETAIL_ID
+where  left(b.ITEM_DATE,7)=  '{pmonth}'
+GROUP BY a.RULE_CODE
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from  statis_rules_violation_count where create_date = '{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>rule_code</key>
+			<string>rule_code</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+insert into statis_rules_violation_count(create_date,rule_id,violation_count) values
+								( '{pmonth}','{rule_code}',{violation_count})
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

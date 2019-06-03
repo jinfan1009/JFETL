@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>dept_id</string>
+			<key>1</key>
+			<string>develop_count</string>
+			<key>2</key>
+			<string>total_count</string>
+			<key>3</key>
+			<string>clinic_systems_count</string>
+			<key>4</key>
+			<string>vessel_count</string>
+			<key>5</key>
+			<string>surgery_count</string>
+			<key>6</key>
+			<string>physical_count</string>
+			<key>7</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+
+
+select a.DEPT_ID, if(b.develop_count is null, 0, b.develop_count),  if(b.total_count is null, 0, b.total_count),
+if( d.clinic_systems_count is null,0,d.clinic_systems_count),  if(e.vessel_count is null, 0, e.vessel_count ),
+if(f.surgery_count is null, 0,f.surgery_count is null ), if(g.physical_count is null,0,g.physical_count ) , '{pmonth}' as pmonth
+from tb_dept a
+LEFT JOIN (
+select  a.dept_id , count(DISTINCT(a.ITEM_ID)) as  develop_count , count(*) as total_count
+from td_order_detail a
+LEFT JOIN  tb_clinicitem m  on a.ITEM_ID = m.ITEM_ID
+where left(a.ITEM_DATE,7) = '{pmonth}'
+and  left(m.ITEM_PRICECODE,1)= '3'
+GROUP BY a.DEPT_ID
+
+) as b on a.DEPT_ID = b.DEPT_ID
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as clinic_systems_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '31'
+
+
+)  as d  on a.dept_id = d.dept_id
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as  vessel_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '32'
+
+)  as e  on a.dept_id = e.dept_id
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as surgery_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '33'
+
+)  as f  on a.dept_id = f.dept_id
+
+LEFT JOIN (
+
+select a.DEPT_ID, count(*) as  physical_count  FROM
+						td_order_detail a
+LEFT JOIN  tb_clinicitem b  on a.ITEM_ID = b.ITEM_ID
+
+where LEFT(a.ITEM_DATE,7) = '{pmonth}'
+and b.ITEM_ID is not NULL
+and left(b.ITEM_PRICECODE,1) = '34'
+
+)  as g  on a.dept_id = g.dept_id
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+
+			delete from statis_project_development_detail
+			where create_date = '{pmonth}'
+
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>develop_count</key>
+			<string>develop_count</string>
+			<key>total_count</key>
+			<string>total_count</string>
+			<key>clinic_systems_count</key>
+			<string>clinic_systems_count</string>
+			<key>vessel_count</key>
+			<string>vessel_count</string>
+			<key>surgery_count</key>
+			<string>surgery_count</string>
+			<key>physical_count</key>
+			<string>physical_count</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+            insert into statis_project_development_detail(dept_id,item_develop_count,item_total_count,clinic_systems_count    ,vessel_count    ,surgery_count    ,physical_count    ,create_date)
+                                           values('{dept_id}'    ,'{develop_count}' ,'{total_count}' ,'{clinic_systems_count}','{vessel_count}','{surgery_count}','{physical_count}','{pmonth}')
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

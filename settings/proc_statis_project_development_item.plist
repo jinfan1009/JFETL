@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>item_id</string>
+			<key>1</key>
+			<string>dept_id</string>
+			<key>2</key>
+			<string>pmonth</string>
+
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+
+		select  ITEM_ID,DEPT_ID ,'{pmonth}' as data_month
+from td_order_detail
+where
+left(ITEM_DATE,7) = '{pmonth}'
+GROUP BY ITEM_ID,DEPT_ID
+
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from statis_project_development_item where data_month ='{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>item_id</key>
+			<string>item_id</string>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+		insert into  statis_project_development_item(item_id,dept_id,data_month) values('{item_id}','{dept_id}','{pmonth}')
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

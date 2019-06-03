@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+		    <key>0</key>
+			<string>diagnosis_code</string>
+			<key>1</key>
+			<string>diagnosis_name</string>
+			<key>2</key>
+			<string>dept_id</string>
+			<key>3</key>
+			<string>order_count</string>
+			<key>4</key>
+			<string>detail_count</string>
+			<key>5</key>
+			<string>detail_amount</string>
+			<key>6</key>
+			<string>violation_count</string>
+			<key>7</key>
+			<string>violation_amount</string>
+			<key>8</key>
+			<string>pmonth</string>
+
+		</dict>
+		<key>input_paras</key>
+		<dict>
+		    <key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>preparesqllist</key>
+		<array>
+			<string>delete from audit_diagnosis_analysis where data_month = '{pmonth}'</string>
+		</array>
+
+		<key>inputsql</key>
+		<string>
+		select  x.diagnosis_code, x.DIAGNOSIS_name ,x.dept_id,x.ordercount,x.ct,x.costs, y.ct,y.costs, '{pmonth}' as pmonth from
+(
+
+select  k.diagnosis_code, m.DIAGNOSIS_name ,k.dept_id,k.ordercount,k.ct,k.costs
+from
+(
+select a.DEPT_ID,c.diagnosis_code,count(*) as ct,SUM(COSTS) as costs ,COUNT( DISTINCT(a.visit_id)) as ordercount
+from td_order_detail a
+LEFT JOIN tr_auditresult  b on a.DETAIL_ID = b.DETAIL_ID
+left JOIN td_order c on a.VISIT_ID = c.VISIT_ID
+left join tb_diagnosis d on c.diagnosis_code = d.diagnosis_code
+where
+left(c.discharge_date,7) = '{pmonth}'
+and a.DEPT_ID = c.DEPT_ID
+GROUP BY a.DEPT_ID,diagnosis_code
+
+) as k
+left JOIN  tb_diagnosis m on k.diagnosis_code = m.diagnosis_code
+) as  x
+
+LEFT JOIN   (
+
+select  k.diagnosis_code, m.DIAGNOSIS_name ,k.dept_id,k.ordercount,k.ct,k.costs
+from
+(
+select a.DEPT_ID,c.diagnosis_code,count(*) as ct,SUM(COSTS) as costs ,COUNT( DISTINCT(a.visit_id)) as ordercount
+from td_order_detail a
+LEFT JOIN tr_auditresult  b on a.DETAIL_ID = b.DETAIL_ID
+left JOIN td_order c on a.VISIT_ID = c.VISIT_ID
+left join tb_diagnosis d on c.diagnosis_code = d.diagnosis_code
+where b.id is not null
+and left(c.discharge_date,7) = '{pmonth}'
+and a.DEPT_ID = c.DEPT_ID
+GROUP BY a.DEPT_ID,diagnosis_code
+
+) as k
+left JOIN  tb_diagnosis m on k.diagnosis_code = m.diagnosis_code
+
+
+) as y   on x.diagnosis_code = y.diagnosis_code and x.dept_id = y.dept_id
+where y.diagnosis_code is not null
+		</string>
+	</dict>
+
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+            <key>diagnosis_code</key>
+			<string>diagnosis_code</string>
+			<key>diagnosis_name</key>
+			<string>diagnosis_name</string>
+			<key>dept_id</key>
+			<string>dept_id</string>
+			<key>order_count</key>
+			<string>order_count</string>
+			<key>detail_count</key>
+			<string>detail_count</string>
+			<key>detail_amount</key>
+			<string>detail_amount</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>violation_amount</key>
+			<string>violation_amount</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+		insert into audit_diagnosis_analysis(create_time,  data_month  ,  dept_id      , order_num      ,settlement_detail_num,illegil_detail_num, order_detail_amount , illegil_amount     ,illegil_rate,diagnosis_id     ,diagnosis_name )
+						VALUES   ( NOW()        ,  '{pmonth}'  ,  '{dept_id}'  , {order_count}  ,  {detail_count}     ,{violation_count} , {detail_amount}     , {violation_amount} ,      0     ,'{diagnosis_code}' ,'{diagnosis_name}')
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+		    <string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

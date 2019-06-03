@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+            <key>0</key>
+			<string>dept_id</string>
+			<key>1</key>
+			<string>rule_code</string>
+			<key>2</key>
+			<string>rule_name</string>
+			<key>3</key>
+			<string>violation_count</string>
+			<key>4</key>
+			<string>violation_amount</string>
+			<key>5</key>
+			<string>pmonth</string>
+
+		</dict>
+		<key>input_paras</key>
+		<dict>
+		    <key>pmonth</key>
+			<string>2018-12</string>
+
+		</dict>
+		<key>inputsql</key>
+		<string>
+		    select a.DEPT_ID,b.RULE_CODE, d.RULE_NAME,count(*) as ct,SUM(COSTS) as costs,'{pmonth}' as pmonth
+from td_order_detail a
+LEFT JOIN tr_auditresult  b on a.DETAIL_ID = b.DETAIL_ID
+left join tb_rule d on b.RULE_CODE = d.RULE_CODE
+where
+b.id is not null and
+left(a.ITEM_DATE,7) = '{pmonth}'
+
+GROUP BY a.DEPT_ID,d.RULE_CODE
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+		<string>
+		delete from audit_dept_violation_detail where data_month = '{pmonth}'
+		</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+		    <key>dept_id</key>
+			<string>dept_id</string>
+			<key>rule_code</key>
+			<string>rule_code</string>
+			<key>rule_name</key>
+			<string>rule_name</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>violation_amount</key>
+			<string>violation_amount</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+insert into audit_dept_violation_detail ( dept_id  ,data_month, rule_code   ,rule_name    ,rule_violation_count,rule_violation_amount)
+								values( '{dept_id}','{pmonth}','{rule_code}','{rule_name}',{violation_count}   ,  {violation_amount}   )
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+		    <string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

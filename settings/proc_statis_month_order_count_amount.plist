@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>order_count</string>
+			<key>1</key>
+			<string>detail_count</string>
+			<key>2</key>
+			<string>order_amount</string>
+			<key>3</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+		SELECT  x.order_count ,y.detail_count,z.order_amount,z.pmonth
+from (
+select count(*)    as order_count, '{pmonth}' as pmonth
+
+			from td_order
+		where
+		LEFT(DISCHARGE_DATE,7) = '{pmonth}'
+
+)  as  x
+LEFT JOIN (
+
+SELECT count(*) as detail_count, '{pmonth}' as pmonth   FROM
+		td_order_detail
+	WHERE
+	left(item_date,7) =  '{pmonth}'
+
+) as y on x.pmonth = y.pmonth
+LEFT JOIN (
+
+	select  sum(total_amount) as order_amount , '{pmonth}' as pmonth
+	from td_order
+	where
+	left(DISCHARGE_DATE,7) = '{pmonth}'
+
+
+) as z on x.pmonth = z.pmonth
+
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+
+			delete  from  statis_month_order_count_amount where data_month = '{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>order_count</key>
+			<string>order_count</string>
+			<key>detail_count</key>
+			<string>detail_count</string>
+			<key>order_amount</key>
+			<string>order_amount</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+insert into statis_month_order_count_amount( order_count,order_detail_count,order_amount,data_month)
+								values( {order_count}, {detail_count} , {order_amount} , '{pmonth}')
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

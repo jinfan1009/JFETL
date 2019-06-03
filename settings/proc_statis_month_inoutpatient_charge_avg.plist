@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+		<dict>
+			<key>0</key>
+			<string>total_amount_out</string>
+			<key>1</key>
+			<string>total_amount_in</string>
+			<key>2</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+			<key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+select m.total_amount,n.total_amount,m.pmonth
+from (
+
+select avg( TOTAL_AMOUNT)  as TOTAL_AMOUNT , '{pmonth}' as  pmonth from td_order a, tb_visittype  b
+
+where left(a.DISCHARGE_DATE,7) = '{pmonth}' and b.PARENT_ID = 0
+and a.VISIT_TYPE =b.VISITTYPE_ID
+
+) as m
+LEFT JOIN (
+
+select avg( TOTAL_AMOUNT) as TOTAL_AMOUNT, '{pmonth}' as  pmonth  from td_order a, tb_visittype  b
+
+where left(a.DISCHARGE_DATE,7) = '{pmonth}' and b.PARENT_ID = 1
+and a.VISIT_TYPE = b.VISITTYPE_ID
+
+) as n on m.pmonth = n.pmonth
+		</string>
+		<key>preparesqllist</key>
+		<array>
+			<string>
+			delete from statis_month_inoutpatient_charge_avg where data_month = '{pmonth}'
+			</string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+			<key>total_amount_out</key>
+			<string>total_amount_out</string>
+			<key>total_amount_in</key>
+			<string>total_amount_in</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+insert into statis_month_inoutpatient_charge_avg (outpatient_charge_avg,inpatient_charge_avg,data_month)
+									values({total_amount_out},{total_amount_in},'{pmonth}')
+
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+			<string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>

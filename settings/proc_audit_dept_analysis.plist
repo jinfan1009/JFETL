@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>input</key>
+	<dict>
+		<key>input_field_mapping</key>
+        <dict>
+            <key>0</key>
+			<string>dept_id</string>
+			<key>1</key>
+			<string>dept_name</string>
+			<key>2</key>
+			<string>order_count</string>
+			<key>3</key>
+			<string>detail_count</string>
+			<key>4</key>
+			<string>detail_amount</string>
+			<key>5</key>
+			<string>violation_count</string>
+			<key>6</key>
+			<string>violation_amount</string>
+			<key>7</key>
+			<string>pmonth</string>
+		</dict>
+		<key>input_paras</key>
+		<dict>
+		    <key>pmonth</key>
+			<string>2018-12</string>
+		</dict>
+		<key>inputsql</key>
+		<string>
+		select d.dept_id,e.dept_name,d.ct ,f.ct,f.costs,g.ct,g.costs ,'{pmonth}' as pmonth
+from (
+select  c.dept_id, count(*) as ct
+from
+(
+select   a.DEPT_ID,  a.VISIT_ID
+from
+td_order_detail a
+LEFT JOIN   td_order  b on a.VISIT_ID = b.VISIT_ID
+where left(a.ITEM_DATE,7) = '{pmonth}'
+GROUP BY a.DEPT_ID,a.VISIT_ID
+) as c
+GROUP BY c.dept_id
+) as d
+LEFT JOIN tb_dept  e on  d.dept_id = e.dept_id
+left join  (
+
+								select   a.DEPT_ID, count(*) as ct ,SUM(a.COSTS) as costs
+									from
+								td_order_detail a
+
+								where left(a.ITEM_DATE,7) = '{pmonth}'
+								GROUP BY a.DEPT_ID
+
+           ) as f on d.dept_id = f.dept_id
+
+left JOIN (
+
+							select   a.DEPT_ID, count(*) as ct ,SUM(a.COSTS) as costs
+							from
+							td_order_detail a
+							LEFT JOIN tr_auditresult b on a.DETAIL_ID  = b.DETAIL_ID
+
+							where left(a.ITEM_DATE,7) = '{pmonth}'
+							and  b.ID is not null
+							GROUP BY a.DEPT_ID
+
+					) as g on d.dept_id = g.dept_id
+where g.ct is not null
+		</string>
+		<key>preparesqllist</key>
+		<array>
+		    <string>
+		    delete from audit_dept_analysis where data_month ='{pmonth}'
+		    </string>
+		</array>
+	</dict>
+	<key>output</key>
+	<dict>
+		<key>output_field_mapping</key>
+		<dict>
+		    <key>dept_id</key>
+			<string>dept_id</string>
+			<key>dept_name</key>
+			<string>dept_name</string>
+			<key>order_count</key>
+			<string>order_count</string>
+			<key>detail_count</key>
+			<string>detail_count</string>
+			<key>detail_amount</key>
+			<string>detail_amount</string>
+			<key>violation_count</key>
+			<string>violation_count</string>
+			<key>violation_amount</key>
+			<string>violation_amount</string>
+			<key>pmonth</key>
+			<string>pmonth</string>
+		</dict>
+		<key>output_paras</key>
+		<dict/>
+		<key>outputsql</key>
+		<string>
+insert into audit_dept_analysis ( order_num, settlement_detail_num, illegil_detail_num , illegil_amount   , data_month,   dept_id    ,dept_name    ,create_time,order_detail_amount)
+			    values( {order_count}      , {detail_count}       ,  {violation_count} , {violation_amount}  , '{pmonth}',   '{dept_id}','{dept_name}', now()     ,   {detail_amount}    )
+		</string>
+	</dict>
+	<key>process</key>
+	<dict>
+		<key>processlist</key>
+		<array>
+		    <string>Value2String</string>
+		</array>
+	</dict>
+</dict>
+</plist>
